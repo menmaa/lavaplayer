@@ -165,7 +165,12 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
       }
 
       if (configJson != null) {
-        return JsonBrowser.parse(configJson);
+        JsonBrowser baseInfo = JsonBrowser.parse(configJson);
+        if(baseInfo.get("assets").isNull()) {
+          String baseUrl = DataFormatTools.extractBetween(html, "\"rootElementId\":\"movie_player\",\"jsUrl\":\"", "\",\"cssUrl\"");
+          baseInfo.put("assets", "{ \"js\": \"" + baseUrl + "\" }");
+        }
+        return baseInfo;
       }
     }
 
