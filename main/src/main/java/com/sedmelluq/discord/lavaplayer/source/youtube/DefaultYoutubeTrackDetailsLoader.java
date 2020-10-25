@@ -59,7 +59,7 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
         switch (checkStatusBlock(statusBlock)) {
           case INFO_PRESENT:
             if (playerInfo.isNull()) {
-              throw new RuntimeException("No player info block.");
+              return new DefaultYoutubeTrackDetails(videoId, getTrackInfoFromEmbedPage(httpInterface, videoId));
             }
 
             return new DefaultYoutubeTrackDetails(videoId, playerInfo);
@@ -156,7 +156,13 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
       HttpClientTools.assertSuccessWithContent(response, "embed video page response");
 
       String html = EntityUtils.toString(response.getEntity(), UTF_8);
-      String configJson = DataFormatTools.extractBetween(html, "'PLAYER_CONFIG': ", "});writeEmbed();");
+      String configJson = DataFormatTools.extractBetween(html, "'PLAYER_CONFIG': ", "});yt.setConfig");
+
+      if(configJson == null) {
+        String json = DataFormatTools.extractBetween(html, "yt.setConfig(", ");writeEmbed();");
+        JsonBrowser browser = JsonBrowser.parse(json);
+        configJson = browser.get("PLAYER_CONFIG").text();
+      }
 
       if (configJson != null) {
         return JsonBrowser.parse(configJson);

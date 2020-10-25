@@ -79,6 +79,9 @@ public class DefaultYoutubeTrackDetails implements YoutubeTrackDetails {
     }
 
     String playerResponse = args.get("player_response").text();
+    if(playerResponse == null) {
+      playerResponse = args.get("embed_player_response").text();
+    }
 
     if (playerResponse != null) {
       JsonBrowser playerData = JsonBrowser.parse(playerResponse);
